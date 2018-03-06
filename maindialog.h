@@ -19,8 +19,11 @@ public:
 private slots:
 	void onAdd();
 	void onRemove();
+	void onAddData();
+	void onRemoveData();
 	void enableControls();
 	void updateProjectList();
+	void updateDataTable();
 
 private:
 	Ui::MainDialog *ui;

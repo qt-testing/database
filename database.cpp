@@ -51,6 +51,16 @@ bool Database::open()
 		return false;
 	}
 
+	query.prepare("CREATE TABLE IF NOT EXISTS Data("
+				  "Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,"
+				  "ProjectId INTEGER,"
+				  "Name TEXT,"
+				  "Data TEXT)");
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return false;
+	}
+
 	return true;
 }
 
@@ -85,6 +95,32 @@ bool Database::removeProject(const QString &name)
 	return true;
 }
 
+bool Database::addData(const QString &projectName, const QString &dataName, const QString &data)
+{
+	int projectId = this->projectId(projectName);
+
+	QString strQuery = QString("INSERT INTO Data "
+							   "(ProjectId, Name, Data) "
+							   "VALUES (%1, '%2', '%3')").
+					   arg(projectId).
+					   arg(dataName).
+					   arg(data);
+
+	QSqlQuery query;
+	query.prepare(strQuery);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return false;
+	}
+
+	return true;
+}
+
+bool Database::removeData(const QString &dataName)
+{
+	return true;
+}
+
 QStringList Database::projects() const
 {
 	QStringList projects;
@@ -101,4 +137,49 @@ QStringList Database::projects() const
 	}
 
 	return projects;
+}
+
+QList<QPair<QString, QString> > Database::data(const QString &projectName) const
+{
+	int projectId = this->projectId(projectName);
+
+	QList<QPair<QString, QString> > result;
+
+	QSqlQuery query;
+	query.prepare("SELECT Name, Data FROM Data "
+				  "WHERE ProjectId = ?");
+	query.addBindValue(projectId);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return result;
+	}
+
+	while (query.next()) {
+		QPair<QString, QString> pair;
+		pair.first = query.value(0).toString();
+		pair.second = query.value(1).toString();
+		result << pair;
+	}
+
+	return result;
+}
+
+int Database::projectId(const QString &name) const
+{
+	int projectId = -1;
+
+	QSqlQuery query;
+	query.prepare("SELECT Id FROM Projects "
+				  "WHERE Name = ?");
+	query.addBindValue(name);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return projectId;
+	}
+
+	while (query.next()) {
+		projectId = query.value(0).toInt();
+	}
+
+	return projectId;
 }
