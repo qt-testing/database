@@ -18,6 +18,9 @@ public:
 	void close();
 
 	bool addProject(const QString &name);
+	bool removeProject(const QString &name);
+
+	QStringList projects() const;
 
 private:
 	QString m_path;

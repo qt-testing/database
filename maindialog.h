@@ -18,6 +18,9 @@ public:
 
 private slots:
 	void onAdd();
+	void onRemove();
+	void enableControls();
+	void updateProjectList();
 
 private:
 	Ui::MainDialog *ui;

@@ -62,7 +62,7 @@ void Database::close()
 bool Database::addProject(const QString &name)
 {
 	QSqlQuery query;
-	QString tmp = QString("INSERT INTO Projects (Name) VALUES ('%1');").arg(name);
+	QString tmp = QString("INSERT INTO Projects (Name) VALUES ('%1')").arg(name);
 	query.prepare(tmp);
 	if (!query.exec()) {
 		qDebug() << query.lastError().text();
@@ -70,4 +70,35 @@ bool Database::addProject(const QString &name)
 	}
 
 	return true;
+}
+
+bool Database::removeProject(const QString &name)
+{
+	QSqlQuery query;
+	query.prepare("DELETE FROM Projects WHERE Name = ?");
+	query.addBindValue(name);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return false;
+	}
+
+	return true;
+}
+
+QStringList Database::projects() const
+{
+	QStringList projects;
+
+	QSqlQuery query;
+	query.prepare("SELECT Name FROM Projects");
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return projects;
+	}
+
+	while (query.next()) {
+		projects.append(query.value(0).toString());
+	}
+
+	return projects;
 }
