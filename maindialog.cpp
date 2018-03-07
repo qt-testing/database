@@ -31,6 +31,9 @@ MainDialog::MainDialog(QWidget *parent) :
 	connect(ui->pushButtonAddData, SIGNAL(clicked(bool)),
 			SLOT(onAddData()));
 
+	connect(ui->pushButtonRemoveData, SIGNAL(clicked(bool)),
+			SLOT(onRemoveData()));
+
 	connect(ui->listWidget, SIGNAL(itemSelectionChanged()),
 			SLOT(enableControls()));
 
@@ -69,19 +72,28 @@ void MainDialog::onRemove()
 	m_db.removeProject(name);
 
 	updateProjectList();
+	updateDataTable();
 	enableControls();
 }
 
 void MainDialog::onAddData()
 {
 	QString projectName = ui->listWidget->selectedItems()[0]->text();
+	m_db.addData(projectName,
+				 QString("%1: Data1").arg(projectName),
+				 QString("%1: Data2").arg(projectName));
 
-	m_db.addData(projectName, "test 1", "test 2");
+	updateDataTable();
+	enableControls();
 }
 
 void MainDialog::onRemoveData()
 {
+	m_db.removeData(ui->listWidget->currentItem()->text(),
+					ui->tableWidget->currentRow());
 
+	updateDataTable();
+	enableControls();
 }
 
 void MainDialog::enableControls()
@@ -104,15 +116,15 @@ void MainDialog::updateProjectList()
 
 void MainDialog::updateDataTable()
 {
+	ui->tableWidget->clearContents();
+	ui->tableWidget->setRowCount(0);
+
 	QList<QListWidgetItem *> list = ui->listWidget->selectedItems();
 	if (!list.count()) {
 		return;
 	}
 
 	const QString projectName = list[0]->text();
-
-	ui->tableWidget->clearContents();
-	ui->tableWidget->setRowCount(0);
 
 	QList<QPair<QString, QString> > pairs = m_db.data(projectName);
 	const int count = pairs.count();

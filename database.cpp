@@ -84,12 +84,20 @@ bool Database::addProject(const QString &name)
 
 bool Database::removeProject(const QString &name)
 {
+	const int projectId = this->projectId(name);
+
 	QSqlQuery query;
 	query.prepare("DELETE FROM Projects WHERE Name = ?");
 	query.addBindValue(name);
 	if (!query.exec()) {
 		qDebug() << query.lastError().text();
 		return false;
+	}
+
+	query.prepare("DELETE FROM Data WHERE ProjectId = ?");
+	query.addBindValue(projectId);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
 	}
 
 	return true;
@@ -116,8 +124,32 @@ bool Database::addData(const QString &projectName, const QString &dataName, cons
 	return true;
 }
 
-bool Database::removeData(const QString &dataName)
+bool Database::removeData(const QString &projectName, const int index)
 {
+	const int projectId = this->projectId(projectName);
+
+	QSqlQuery query;
+	query.prepare("SELECT * FROM Data WHERE ProjectId = ?");
+	query.addBindValue(projectId);
+	if (!query.exec()) {
+		qDebug() << query.lastError().text();
+		return false;
+	}
+
+	QList<int> ids;
+	while (query.next()) {
+		ids.append(query.value(0).toInt());
+	}
+
+	if (index < ids.count()) {
+		query.prepare("DELETE FROM Data WHERE Id = ?");
+		query.addBindValue(ids[index]);
+		if (!query.exec()) {
+			qDebug() << query.lastError().text();
+			return false;
+		}
+	}
+
 	return true;
 }
 

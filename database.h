@@ -22,7 +22,7 @@ public:
 	bool removeProject(const QString &name);
 
 	bool addData(const QString &projectName, const QString &dataName, const QString &data);
-	bool removeData(const QString &dataName);
+	bool removeData(const QString &projectName, const int index);
 
 	QStringList projects() const;
 	QList<QPair<QString, QString> > data(const QString &projectName) const;
